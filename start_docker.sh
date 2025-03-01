@@ -28,9 +28,11 @@ fi
 
 # If MODE was defined as TEST, send sample packets
 if [ "$MODE" == "TEST" ] ; then
+	echo "Starting PacketTX.py"
 	python3 /root/horusrpitx/PacketTX.py --frequency $FREQ --id $ID --lat $LAT --lon $LON --alt $ALT --sats $SATS $VERBOSE
 #If MODE was defined as GPS, send GPS data
 elif [ "$MODE" == "GPS" ] ; then
+	echo "Starting tx_gps.py"
 	python3 /root/horusrpitx/tx_gps.py $ID --frequency $FREQ --gps $DEVICE $VERBOSE
 else
 	echo "Invalid mode specified! Exiting..."

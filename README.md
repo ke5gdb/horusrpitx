@@ -16,11 +16,97 @@ BCM2835 | Model 1 A, A+, B, B+, Zero (W) | :grey_question:
 BCM2836 | Model 2 B | :grey_question:
 BCM2837 | Model 3 B, CM3 (some 2 B),  | :heavy_check_mark:
 BCM2837B0 | Model 3 A+, B+, CM3+ | :heavy_check_mark:
-BCM2711 | Model 4 B, CM4, Pi 400 | :grey_question:
+BCM2711 | Model 4 B, CM4, Pi 400 | :heavy_check_mark:
 BCM2712 | Model 5 B, CM5, Pi 500 | :x:
 RP3A0 | Model Zero 2W | :heavy_check_mark:
 
-## Installation
+## Installation - Docker
+
+The recommended method to use this utility is with Docker. 
+
+### Install Docker
+
+If Docker is not installed, follow these directions:
+
+```console
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+sudo usermod -aG docker $(whoami)
+
+sudo reboot
+```
+
+### Test Mode
+
+To generate sample packets to test receivers and decoders, a test mode has been written. This mode does not interface to a GPS, but allows you to set certain parameters via command line arguments.
+
+|Argument|Default|Description|
+|-|-|-|
+|MODE|TEST|Configure container for test mode|
+|ID|256|Horus Binary ID. Will not be uploaded if `256` (useful for testing)| 
+|FREQ|434.200|Frequency in MHz|
+|LAT|0.0|Latitude in degrees north|
+|LON|0.0|Longitude in degrees west|
+|ALT|0|Altitude in meters|
+|SATS|3|Satellites visible -- must be greater than 0 for position to be evaluated|
+|VERBOSE|0|Enable verbose mode (`1`) in container|
+
+```console
+docker run \
+  --name horusrpitx \
+  --privileged \
+  --device /dev/mem \
+  -e MODE=TEST \
+  -e ID=256 \
+  -e FREQ=434.200 \
+  -e LAT=0.0 \
+  -e LON=0.0 \
+  -e ALT=0 \
+  -e SATS=3 \
+  ghcr.io/ke5gdb/horusrpitx:testing
+```
+
+### GPS Mode
+
+This mode can accept input from a u-blox GPS and transmit position packets from the u-blox GPS input.
+
+```console
+docker run \
+  --name horusrpitx \
+  --privileged \
+  --device /dev/mem \
+  -e MODE=GPS \
+  -e ID=256 \
+  -e FREQ=434.200 \
+  ghcr.io/ke5gdb/horusrpitx:testing
+```
+
+### Additional Commands
+
+To start TEST mode or GPS mode on boot, add the following arguments to the Docker commands:
+
+```console
+--restart always
+--daemon
+```
+
+To stop the container, use:
+
+```console 
+docker stop horusrpitx
+```
+
+To update the container, use:
+
+```console
+docker stop horusrpitx
+docker rm horusrpitx
+docker pull ghcr.io/ke5gdb/horusrpitx:testing
+```
+and run the container using the appropriate `docker run` command from above.
+
+## Installation - Native Install
 
 ### Native Install
 
