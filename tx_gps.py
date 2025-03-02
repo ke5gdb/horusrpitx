@@ -27,6 +27,7 @@ parser.add_argument("--gps", default="none", help="uBlox GPS Serial port. Defaul
 parser.add_argument("--frequency", default=434.200, type=float, help="Transmit Frequency (MHz). (Default: 434.200 MHz)")
 parser.add_argument("--autorestart", default=20, type=int, help="Number of packets to transmit continuously before restarting TX process. (Default: 20)")
 parser.add_argument("-v", "--verbose", action='store_true', default=False, help="Show additional debug info.")
+parser.add_argument("-d", "--docker", action='store_true', default=False, help="Docker flag for container use (disables temp + timedatectl)")
 args = parser.parse_args()
 
 if args.verbose:
@@ -48,7 +49,10 @@ tx = PacketTX.PacketTX(frequency=args.frequency, autorestart=args.autorestart, l
 tx.start_tx()
 
 # Initialize global variables
-system_time_set = False
+if not args.docker:
+	system_time_set = False
+else:
+	system_time_set = True
 max_altitude = -1
 sequence = 0
 gps_data = None
@@ -56,7 +60,7 @@ gps_data = None
 # Disable Systemctl NTP synchronization so that we can set the system time on first GPS lock.
 # This is necessary as NTP will refuse to sync the system time to the information we feed it via ntpshm unless
 # the system clock is already within a few seconds.
-if args.gps.lower() != 'none':
+if args.gps.lower() != 'none' and not args.docker:
 	ret_code = os.system("timedatectl set-ntp 0")
 	if ret_code == 0:
 		logging.debug("GPS Debug: Disabled NTP Sync until GPS lock.")
@@ -122,8 +126,11 @@ encoder = horusdemodlib.encoder.Encoder()
 try:
 	while True:
 		# Get temperature
-		data = subprocess.check_output("/usr/bin/vcgencmd measure_temp", shell=True)
-		temperature = data.decode().split('=')[1].split('\'')[0]
+		if not args.docker:
+			data = subprocess.check_output("/usr/bin/vcgencmd measure_temp", shell=True)
+			temperature = float(data.decode().split('=')[1].split('\'')[0])
+		else:
+			temperature = None
 
 		# Create Horus Binary Packet, send to tx thread
 		if not tx.staged_packet and gps_data:
@@ -136,7 +143,7 @@ try:
 				altitude=gps_data['altitude'],
 				speed=gps_data['ground_speed'],
 				satellites=gps_data['numSV'],
-				temperature=float(temperature),
+				temperature=temperature,
 				time_dt=datetime.datetime.utcnow(),
 				# custom_data = b'\x05\x00\xe1\x00#\xd2\x03\x00\x00'
 			)

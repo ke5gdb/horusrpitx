@@ -12,7 +12,7 @@
 : "${LON:=0}"
 : "${ALT:=0}"
 : "${SATS:=3}"
-: "${DEVICE:=/dev/ttyACM0}"
+: "${DEVICE:=/dev/ttyUSB0}"
 
 cd /root/horusrpitx/
 
@@ -33,7 +33,7 @@ if [ "$MODE" == "TEST" ] ; then
 #If MODE was defined as GPS, send GPS data
 elif [ "$MODE" == "GPS" ] ; then
 	echo "Starting tx_gps.py"
-	python3 /root/horusrpitx/tx_gps.py $ID --frequency $FREQ --gps $DEVICE $VERBOSE
+	python3 /root/horusrpitx/tx_gps.py $ID --docker --frequency $FREQ --gps $DEVICE $VERBOSE
 else
 	echo "Invalid mode specified! Exiting..."
 	exit 1

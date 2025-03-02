@@ -71,11 +71,20 @@ docker run \
 
 This mode can accept input from a u-blox GPS and transmit position packets from the u-blox GPS input.
 
+|Argument|Default|Description|
+|-|-|-|
+|device|/dev/ttyACM0|Serial port for GPS|
+|MODE|TEST|Configure container for test mode|
+|ID|256|Horus Binary ID. Will not be uploaded if `256` (useful for testing)| 
+|FREQ|434.200|Frequency in MHz|
+
+
 ```console
 docker run \
   --name horusrpitx \
   --privileged \
   --device /dev/mem \
+  --device "/dev/ttyACM0:/dev/ttyUSB0" \
   -e MODE=GPS \
   -e ID=256 \
   -e FREQ=434.200 \
