@@ -130,7 +130,7 @@ try:
 			data = subprocess.check_output("/usr/bin/vcgencmd measure_temp", shell=True)
 			temperature = float(data.decode().split('=')[1].split('\'')[0])
 		else:
-			temperature = None
+			temperature = -999
 
 		# Create Horus Binary Packet, send to tx thread
 		if not tx.staged_packet and gps_data:
